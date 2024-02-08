@@ -1,7 +1,7 @@
 import time
 import re
+import ast
 import cianparser
-from aiogram.types import InputMediaPhoto, InputFile
 from bs4 import BeautifulSoup
 import requests
 import asyncio
@@ -36,6 +36,7 @@ async def cmd_start(message: types.Message):
     markup = types.InlineKeyboardMarkup(inline_keyboard=[[btn_chat]])
 
     for i in data:
+        # page = 1
         # url_cian = i['url']
         url_cian = i
         session = requests.Session()
@@ -44,8 +45,11 @@ async def cmd_start(message: types.Message):
         soup = BeautifulSoup(r.text, 'lxml')
         url_rooms = soup.find('div', class_='_7a3fb80146--count--Ug9Tp').find('a').get("href")
         res_rooms = session.get(url_rooms)
+        script_rooms = BeautifulSoup(res_rooms.text, 'html.parser')
+        script = script_rooms.find_all('script')
+        match = re.split(r'\W+', script[10].text)
+        res_rooms = session.get(f"https://www.cian.ru/cat.php?currency=2&deal_type=sale&engine_version=2&minprice=18000000&newobject%5B0%5D={match[42]}&offer_type=flat&p={1}")
         soup_rooms = BeautifulSoup(res_rooms.text, 'lxml')
-        # card = soup_rooms.find_all('div', class_='_93444fe79c--card--ibP42 _93444fe79c--wide--gEKNN')
         card = soup_rooms.find_all('article', class_='_93444fe79c--container--Povoi _93444fe79c--cont--OzgVc')
 
         for j in card:
@@ -77,7 +81,8 @@ async def cmd_start(message: types.Message):
                 deadline = re.sub(r'([А-Я ])', r' \1', characteristics[2].find('div', class_='a10a3f92e9--text--eplgM').text)
                 finishing = re.sub(r'([А-Я ])', r' \1', characteristics[3].find('div', class_='a10a3f92e9--text--eplgM').text)
                 description = soup_room.find('div', class_='a10a3f92e9--layout--BaqYw').text
-                des = '🌟 Понравилась квартира? Готовы к покупке? Напишите нашему эксперту в чат, и мы оперативно организуем показ объекта. Ваш новый дом ждет вас! 🏡💼'
+                des = '🌟 Понравилась квартира? Готовы к покупке?' \
+                      '\nНапишите нашему эксперту в чат, и мы оперативно организуем показ объекта. Ваш новый дом ждет вас! 🏡💼'
                 await asyncio.sleep(5) # -1001420035930
                 await bot.send_message(message.from_user.id, f"[🌇]({img_1}){name},{street} {num_haus} {subway}"
                                                              f"🚶‍♂{time_to_metro} {finishing}" 
@@ -85,6 +90,7 @@ async def cmd_start(message: types.Message):
                                                              f"\n{floor} {rc} {square_meter} {deal}"
                                                              f"\n{description}"
                                                              f"\n{des}", parse_mode="Markdown", reply_markup=markup)
+                # page += 1
             except Exception:
                 continue
 
