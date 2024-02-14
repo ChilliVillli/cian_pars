@@ -1,31 +1,29 @@
 import os
 import re
 import sqlite3 as sq
-import cianparser
 from bs4 import BeautifulSoup
 import requests
 import asyncio
 from dotenv import load_dotenv
-from aiogram.filters import CommandStart
-from aiogram import Bot, Dispatcher, types
+# from aiogram.filters import CommandStart
+from aiogram import Bot, Dispatcher, types, executor
 from fake_useragent import UserAgent
+from datetime import datetime
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 
 
 load_dotenv()
 bot = Bot(os.getenv('TOKEN'))
-dp = Dispatcher()
+dp = Dispatcher(bot, storage=MemoryStorage())
 ua = UserAgent()
 headers = {'User-agent': ua.random}
 
 
-# moscow_parser = cianparser.CianParser(location="Москва и область")
-# data = moscow_parser.get_newobjects()
 
-
-@dp.message(CommandStart())
-async def cmd_start(message: types.Message):
-    # global cur, base
+# @dp.message(CommandStart())
+@dp.message_handler(commands=['start'])
+async def main(message: types.Message):
 
     await bot.send_message(message.from_user.id, 'Здравствуйте, {0.first_name}!'.format(message.from_user))
 
@@ -66,6 +64,13 @@ async def cmd_start(message: types.Message):
 
         for j in card:
 
+            # cur_datetime = datetime.now()
+            # hour = cur_datetime.hour
+
+            # if 2 <= hour <= 5:
+            #     await asyncio.sleep(14400)
+
+            print(page)
             if page == 54:
                 page = 0
 
@@ -84,12 +89,12 @@ async def cmd_start(message: types.Message):
                     base.commit()
 
                     deadline_rc = j.find_all('div', class_='_93444fe79c--container--aWzpE')
-                    rc = deadline_rc[0].find('a', class_='_93444fe79c--jk--dIktL').text #цена за кв метр
-                    time_to_metro = j.find('div', class_='_93444fe79c--remoteness--q8IXp').text
+                    rc = deadline_rc[0].find('a', class_='_93444fe79c--jk--dIktL').text.replace('ЖК', '') #ЖК «»
+                    rc_go = ''.join(filter(str.isalnum, rc))
+                    # time_to_metro = j.find('div', class_='_93444fe79c--remoteness--q8IXp').text
                     address_all = j.find_all('a', class_='_93444fe79c--link--NQlVc')
-                    subway = address_all[3].text
                     street = address_all[4].text
-                    num_haus = address_all[5].text
+                    # num_haus = address_all[5].text
                     card_room = session.get(url_card)
                     soup_room = BeautifulSoup(card_room.text, 'lxml')
                     await asyncio.sleep(3)
@@ -98,6 +103,7 @@ async def cmd_start(message: types.Message):
                     conditions = soup_room.find_all('div', class_='a10a3f92e9--item--n_zVq')
                     condit = conditions[-1].find_all('span', class_='a10a3f92e9--color_black_100--Ephi7 a10a3f92e9--lineHeight_5u--e6Sug a10a3f92e9--fontWeight_normal--JEG_c a10a3f92e9--fontSize_14px--reQMB a10a3f92e9--display_block--KYb25 a10a3f92e9--text--e4SBY a10a3f92e9--text_letterSpacing__0--cQxU5 a10a3f92e9--text_whiteSpace__nowrap--hJYYl')
                     price = soup_room.find('div', class_='a10a3f92e9--amount--ON6i1').text
+                    subway = soup_room.find('a', class_='a10a3f92e9--underground_link--VnUVj').text
                     square_meter = condit[1].text
                     deal = f"Условия сделки: {condit[3].text}"
                     characteristics = soup_room.find_all('div', class_='a10a3f92e9--item--Jp5Qv')
@@ -109,27 +115,34 @@ async def cmd_start(message: types.Message):
                     des = '🌟 Понравилась квартира? Готовы к покупке?' \
                           '\nНапишите нашему эксперту в чат, и мы оперативно организуем показ объекта. ' \
                           '\nВаш новый дом ждет вас! 🏡💼'
-                    await asyncio.sleep(5) # 2006923323
-                    await bot.send_message(message.from_user.id, f"[🌇]({img_1}){name},{street}, {num_haus}"
-                                                                 f"{subway} 🚶‍♂{time_to_metro} {finishing}" 
+                    await asyncio.sleep(5) # 15 мин -1002006923323
+                    await bot.send_message(message.from_user.id, f"[🌇]({img_1}){name} {street}"
+                                                                 f"\n#ЖК{rc_go}"
+                                                                 f"\nⓂ️ {subway}"
                                                                  f"\n💰{price} {deadline} {square}"
-                                                                 f"\n{floor} {rc} {square_meter} {deal}"
+                                                                 f"\n{floor} {square_meter}"
+                                                                 f"\n{deal} {finishing}"
                                                                  f"\n{description}"
                                                                  f"\n{des}", parse_mode="Markdown", reply_markup=markup)
-
 
                 if len(info) > 0:
                     continue
 
+                if count == len(card):
+                    break
 
             except Exception:
                 continue
 
-            if count == len(card):
-                break
 
 
-async def main():
-    await dp.start_polling(bot)
 
-asyncio.run(main())
+# async def main():
+#     await dp.start_polling(bot)
+#
+# asyncio.run(main())
+
+
+if __name__ == '__main__':
+    executor.start_polling(dp, skip_updates=True)
+                           # asyncio.run(main())
