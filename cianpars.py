@@ -53,6 +53,7 @@ async def main(message: types.Message):
 
     # for i in data:
 
+
         # url_cian = i['url']
         # url_cian = i
         # session = requests.Session()
