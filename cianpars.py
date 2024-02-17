@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 import requests
 import asyncio
 from dotenv import load_dotenv
-# from aiogram.filters import CommandStart
 from aiogram import Bot, Dispatcher, types, executor
 from fake_useragent import UserAgent
 from datetime import datetime
@@ -17,22 +16,34 @@ load_dotenv()
 bot = Bot(os.getenv('TOKEN'))
 dp = Dispatcher(bot, storage=MemoryStorage())
 ua = UserAgent()
-headers = {'User-agent': ua.random}
+# headers = {'User-agent': ua.random}
+headers = {'User-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
+
+proxies = {
+    'https': 'http://47.56.110.204:8989'
+}
+
+# response = requests.get(url='https://2ip.ru', headers=headers, proxies=proxies)
+# soup_response = BeautifulSoup(response.text, 'lxml')
+# ip = soup_response.find('div', class_='ip').text.strip()
+# print(ip)
 
 
 
-# @dp.message(CommandStart())
 @dp.message_handler(commands=['start'])
 async def main(message: types.Message):
 
+
+
+
     await bot.send_message(message.from_user.id, 'Здравствуйте, {0.first_name}!'.format(message.from_user))
+
+    btn_chat = types.InlineKeyboardButton(text='Напишите нашему эксперту в чат', url='https://t.me/EES_chat')
+    markup = types.InlineKeyboardMarkup(inline_keyboard=[[btn_chat]])
 
     base = sq.connect('base.db')
     cur = base.cursor()
     base.execute('CREATE TABLE IF NOT EXISTS base(name TEXT)')
-
-    btn_chat = types.InlineKeyboardButton(text='Напишите нашему эксперту в чат', url='https://t.me/EES_chat')
-    markup = types.InlineKeyboardMarkup(inline_keyboard=[[btn_chat]])
 
     page = 0
 
@@ -57,8 +68,12 @@ async def main(message: types.Message):
 
         session = requests.Session()
         session.headers.update(headers)
-        res_rooms = session.get(f"https://www.cian.ru/cat.php?currency=2&deal_type=sale&engine_version=2&minprice=18000000&object_type%5B0%5D=2&offer_type=flat&p={page}&region=-1&room1=1&room2=1&room3=1&room4=1&room5=1&room6=1")
+        session.proxies.update(proxies)
+        # res_rooms = session.get(f"https://www.cian.ru/cat.php?currency=2&deal_type=sale&engine_version=2&minprice=18000000&object_type%5B0%5D=2&offer_type=flat&p={page}&region=-1&room1=1&room2=1&room3=1&room4=1&room5=1&room6=1")
+        res_rooms = session.get('https://www.cian.ru/cat.php?currency=2&deal_type=sale&engine_version=2&minprice=18000000&object_type%5B0%5D=2&offer_type=flat&p=1&region=-1&room1=1&room2=1&room3=1&room4=1&room5=1&room6=1')
+        print(res_rooms)
         soup_rooms = BeautifulSoup(res_rooms.text, 'lxml')
+        # print(soup_rooms)
         card = soup_rooms.find_all('article', class_='_93444fe79c--container--Povoi _93444fe79c--cont--OzgVc')
         await asyncio.sleep(5)
 
@@ -66,11 +81,11 @@ async def main(message: types.Message):
 
             # cur_datetime = datetime.now()
             # hour = cur_datetime.hour
-
+            #
             # if 2 <= hour <= 5:
             #     await asyncio.sleep(14400)
 
-            print(page)
+
             if page == 54:
                 page = 0
 
@@ -118,7 +133,7 @@ async def main(message: types.Message):
                     await asyncio.sleep(5) # 15 мин -1002006923323
                     await bot.send_message(message.from_user.id, f"[🌇]({img_1}){name} {street}"
                                                                  f"\n#ЖК{rc_go}"
-                                                                 f"\nⓂ️ {subway}"
+                                                                 f"\nⓂ️ #{subway}"
                                                                  f"\n💰{price} {deadline} {square}"
                                                                  f"\n{floor} {square_meter}"
                                                                  f"\n{deal} {finishing}"
@@ -136,13 +151,5 @@ async def main(message: types.Message):
 
 
 
-
-# async def main():
-#     await dp.start_polling(bot)
-#
-# asyncio.run(main())
-
-
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
-                           # asyncio.run(main())
