@@ -16,25 +16,12 @@ load_dotenv()
 bot = Bot(os.getenv('TOKEN'))
 dp = Dispatcher(bot, storage=MemoryStorage())
 ua = UserAgent()
-# headers = {'User-agent': ua.random}
-headers = {'User-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'}
-
-proxies = {
-    'https': 'http://47.56.110.204:8989'
-}
-
-# response = requests.get(url='https://2ip.ru', headers=headers, proxies=proxies)
-# soup_response = BeautifulSoup(response.text, 'lxml')
-# ip = soup_response.find('div', class_='ip').text.strip()
-# print(ip)
+headers = {'User-agent': ua.random}
 
 
 
 @dp.message_handler(commands=['start'])
 async def main(message: types.Message):
-
-
-
 
     await bot.send_message(message.from_user.id, 'Здравствуйте, {0.first_name}!'.format(message.from_user))
 
@@ -52,9 +39,8 @@ async def main(message: types.Message):
         page += 1
 
     # for i in data:
-
-
-        # url_cian = i['url']
+    #
+    #     url_cian = i['url']
         # url_cian = i
         # session = requests.Session()
         # session.headers.update(headers)
@@ -66,25 +52,22 @@ async def main(message: types.Message):
         # script = script_rooms.find_all('script')
         # match = re.split(r'\W+', script[10].text)
         # res_rooms = session.get(f"https://www.cian.ru/cat.php?currency=2&deal_type=sale&engine_version=2&minprice=18000000&newobject%5B0%5D={match[42]}&offer_type=flat&p={3}")
-
+        await asyncio.sleep(10)
         session = requests.Session()
         session.headers.update(headers)
-        session.proxies.update(proxies)
-        # res_rooms = session.get(f"https://www.cian.ru/cat.php?currency=2&deal_type=sale&engine_version=2&minprice=18000000&object_type%5B0%5D=2&offer_type=flat&p={page}&region=-1&room1=1&room2=1&room3=1&room4=1&room5=1&room6=1")
-        res_rooms = session.get('https://www.cian.ru/cat.php?currency=2&deal_type=sale&engine_version=2&minprice=18000000&object_type%5B0%5D=2&offer_type=flat&p=1&region=-1&room1=1&room2=1&room3=1&room4=1&room5=1&room6=1')
-        print(res_rooms)
+        res_rooms = session.get(f"https://www.cian.ru/cat.php?currency=2&deal_type=sale&engine_version=2&minprice=18000000&object_type%5B0%5D=2&offer_type=flat&p={page}&region=-1&room1=1&room2=1&room3=1&room4=1&room5=1&room6=1")
         soup_rooms = BeautifulSoup(res_rooms.text, 'lxml')
-        # print(soup_rooms)
         card = soup_rooms.find_all('article', class_='_93444fe79c--container--Povoi _93444fe79c--cont--OzgVc')
+
         await asyncio.sleep(5)
 
         for j in card:
 
-            # cur_datetime = datetime.now()
-            # hour = cur_datetime.hour
-            #
-            # if 2 <= hour <= 5:
-            #     await asyncio.sleep(14400)
+            cur_datetime = datetime.now()
+            hour = cur_datetime.hour
+
+            if 2 <= hour <= 5:
+                await asyncio.sleep(14400)
 
 
             if page == 54:
@@ -105,7 +88,7 @@ async def main(message: types.Message):
                     base.commit()
 
                     deadline_rc = j.find_all('div', class_='_93444fe79c--container--aWzpE')
-                    rc = deadline_rc[0].find('a', class_='_93444fe79c--jk--dIktL').text.replace('ЖК', '') #ЖК «»
+                    rc = deadline_rc[0].find('a', class_='_93444fe79c--jk--dIktL').text.replace('ЖК', '') #ЖК
                     rc_go = ''.join(filter(str.isalnum, rc))
                     # time_to_metro = j.find('div', class_='_93444fe79c--remoteness--q8IXp').text
                     address_all = j.find_all('a', class_='_93444fe79c--link--NQlVc')
@@ -131,15 +114,15 @@ async def main(message: types.Message):
                     des = '🌟 Понравилась квартира? Готовы к покупке?' \
                           '\nНапишите нашему эксперту в чат, и мы оперативно организуем показ объекта. ' \
                           '\nВаш новый дом ждет вас! 🏡💼'
-                    await asyncio.sleep(5) # 15 мин -1002006923323
-                    await bot.send_message(message.from_user.id, f"[🌇]({img_1}){name} {street}"
-                                                                 f"\n#ЖК{rc_go}"
-                                                                 f"\nⓂ️ #{subway}"
-                                                                 f"\n💰{price} {deadline} {square}"
-                                                                 f"\n{floor} {square_meter}"
-                                                                 f"\n{deal} {finishing}"
-                                                                 f"\n{description}"
-                                                                 f"\n{des}", parse_mode="Markdown", reply_markup=markup)
+                    await asyncio.sleep(900)
+                    await bot.send_message(-1002006923323, f"[🌇]({img_1}){name} {street}"
+                                                           f"\n#ЖК{rc_go}"
+                                                           f"\nⓂ️ #{subway.replace(' ', '')}"
+                                                           f"\n💰{price} {deadline} {square}"
+                                                           f"\n{floor}\nЦена за кв. м {square_meter}"
+                                                           f"\n{deal} {finishing}"
+                                                           f"\n{description}"
+                                                           f"\n{des}", parse_mode="Markdown", reply_markup=markup)
 
                 if len(info) > 0:
                     continue
