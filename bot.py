@@ -157,7 +157,6 @@ async def main(message: Message, bot):
                                                        f"\nУсловия сделки: {deal}"
                                                        f"\n{description}"
                                                        f"\n{offer}", parse_mode="Markdown", reply_markup=markup)
-
                 await asyncio.sleep(900)
 
                 if count_base > 0:
