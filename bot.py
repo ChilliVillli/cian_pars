@@ -71,7 +71,7 @@ async def main(message: Message, bot):
 
             try:
 
-                price = j.find('span', class_="_93444fe79c--color_text-primary-default--vSRPB _93444fe79c--lineHeight_28px--KFXmc _93444fe79c--fontWeight_bold--BbhnX _93444fe79c--fontSize_22px--sFuaL _93444fe79c--display_block--KYb25 _93444fe79c--text--e4SBY _93444fe79c--text_letterSpacing__normal--tfToq").text
+                price = j.find('span', class_="_93444fe79c--color_text-primary-default--vSRPB _93444fe79c--lineHeight_28px--KFXmc _93444fe79c--fontWeight_bold--BbhnX _93444fe79c--fontSize_22px--sFuaL _93444fe79c--display_block--KYb25 _93444fe79c--text--b2YS3 _93444fe79c--text_letterSpacing__normal--yhcXb").text
                 name = j.find('div', class_='_93444fe79c--row--kEHOK').find('a', class_='_93444fe79c--link--VtWj6').\
                     find('span', class_='').text
                 url_card = j.find('div', class_='_93444fe79c--row--kEHOK').find('a', class_='_93444fe79c--link--VtWj6').\
@@ -128,10 +128,10 @@ async def main(message: Message, bot):
 
                 for addition in range(len(characteristics)):
 
-                    variable = characteristics[addition].find('span', class_='a10a3f92e9--color_gray60_100--r_axa a10a3f92e9--lineHeight_4u--E1SPG a10a3f92e9--fontWeight_normal--JEG_c a10a3f92e9--fontSize_12px--pY5Xn a10a3f92e9--display_block--KYb25 a10a3f92e9--text--e4SBY a10a3f92e9--text_letterSpacing__0--cQxU5').text
+                    variable = characteristics[addition].find('span', class_='a10a3f92e9--color_gray60_100--r_axa a10a3f92e9--lineHeight_4u--E1SPG a10a3f92e9--fontWeight_normal--JEG_c a10a3f92e9--fontSize_12px--pY5Xn a10a3f92e9--display_block--KYb25 a10a3f92e9--text--b2YS3 a10a3f92e9--text_letterSpacing__0--CNLlz').text
 
                     if variable in dict_addition:
-                        dict_addition[variable] = characteristics[addition].find('span', class_='a10a3f92e9--color_text-primary-default--vSRPB a10a3f92e9--lineHeight_6u--cedXD a10a3f92e9--fontWeight_bold--BbhnX a10a3f92e9--fontSize_16px--QNYmt a10a3f92e9--display_block--KYb25 a10a3f92e9--text--e4SBY').text
+                        dict_addition[variable] = characteristics[addition].find('span', class_='a10a3f92e9--color_text-primary-default--vSRPB a10a3f92e9--lineHeight_6u--cedXD a10a3f92e9--fontWeight_bold--BbhnX a10a3f92e9--fontSize_16px--QNYmt a10a3f92e9--display_block--KYb25 a10a3f92e9--text--b2YS3').text
 
                     if variable not in dict_addition:
                         continue
